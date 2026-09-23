@@ -1,13 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { DB, Team, Player } from '@/lib/data';
+import { DB, Team, Player, Announcement } from '@/lib/data';
 import { useRouter } from 'next/navigation';
 
 export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
-  const [db, setDb] = useState<DB>(initialDb);
+  const [db, setDb] = useState<DB>({
+    ...initialDb,
+    announcements: initialDb.announcements || [],
+  });
   const [saving, setSaving] = useState(false);
   const router = useRouter();
+
+  // Announcement form state
+  const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
+  const [newTarget, setNewTarget] = useState('all');
 
   const handleTeamChange = (id: string, field: keyof Team, value: number | string) => {
     setDb(prev => ({
@@ -48,6 +56,41 @@ export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
     }));
   };
 
+  const addAnnouncement = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newContent.trim()) return;
+
+    const newAnn: Announcement = {
+      id: 'ann_' + Date.now(),
+      title: newTitle.trim(),
+      content: newContent.trim(),
+      target: newTarget,
+      createdAt: new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    };
+
+    setDb(prev => ({
+      ...prev,
+      announcements: [newAnn, ...(prev.announcements || [])],
+    }));
+
+    setNewTitle('');
+    setNewContent('');
+    setNewTarget('all');
+  };
+
+  const removeAnnouncement = (id: string) => {
+    setDb(prev => ({
+      ...prev,
+      announcements: (prev.announcements || []).filter(a => a.id !== id),
+    }));
+  };
+
   const saveChanges = async () => {
     setSaving(true);
     try {
@@ -72,16 +115,102 @@ export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center bg-slate-800 p-4 rounded-xl border border-slate-700 sticky top-4 z-10 shadow-2xl">
+        <span className="text-amber-400 font-bold text-lg">Admin Actions</span>
         <button 
           onClick={saveChanges} 
           disabled={saving}
           className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-xl shadow-lg transition-colors"
         >
-          {saving ? 'Saving...' : 'Save All Changes'}
+          {saving ? 'Saving...' : '💾 Save All Changes'}
         </button>
       </div>
 
+      {/* Announcements Manager Section */}
+      <div className="bg-slate-800 p-8 rounded-2xl shadow-xl border border-amber-500/30">
+        <h2 className="text-3xl font-bold mb-6 text-amber-400 flex items-center gap-3">
+          📢 Manage Announcements
+        </h2>
+
+        {/* Create Announcement Form */}
+        <form onSubmit={addAnnouncement} className="bg-slate-900 p-6 rounded-xl border border-slate-700 space-y-4 mb-8">
+          <h3 className="font-bold text-lg text-white">Create New Announcement</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wide">Title</label>
+              <input
+                type="text"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                placeholder="e.g. Next Match Schedule Update"
+                className="w-full bg-slate-800 border border-slate-600 text-white p-2.5 rounded-lg focus:border-amber-400 focus:outline-none"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wide">Target Location</label>
+              <select
+                value={newTarget}
+                onChange={e => setNewTarget(e.target.value)}
+                className="w-full bg-slate-800 border border-slate-600 text-white p-2.5 rounded-lg focus:border-amber-400 focus:outline-none"
+              >
+                <option value="all">Main Page (Global Announcement)</option>
+                {db.teams.map(t => (
+                  <option key={t.id} value={t.id}>{t.name} Team Page</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wide">Announcement Content</label>
+            <textarea
+              value={newContent}
+              onChange={e => setNewContent(e.target.value)}
+              rows={3}
+              placeholder="Enter details..."
+              className="w-full bg-slate-800 border border-slate-600 text-white p-2.5 rounded-lg focus:border-amber-400 focus:outline-none"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-lg transition-colors"
+          >
+            + Add Announcement
+          </button>
+        </form>
+
+        {/* Existing Announcements List */}
+        <h3 className="font-bold text-xl mb-4 text-white">Active Announcements</h3>
+        {(!db.announcements || db.announcements.length === 0) ? (
+          <p className="text-slate-500 italic">No announcements posted yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {db.announcements.map(ann => (
+              <div key={ann.id} className="flex justify-between items-start bg-slate-900 p-4 rounded-xl border border-slate-700 gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <h4 className="font-bold text-amber-300 text-lg">{ann.title}</h4>
+                    <span className="bg-slate-800 text-amber-400 text-xs px-2 py-0.5 rounded border border-slate-600">
+                      {ann.target === 'all' ? '🌐 Main Page' : `🛡️ ${db.teams.find(t => t.id === ann.target)?.name || ann.target}`}
+                    </span>
+                    <span className="text-xs text-slate-500">{ann.createdAt}</span>
+                  </div>
+                  <p className="text-slate-300 text-sm whitespace-pre-wrap">{ann.content}</p>
+                </div>
+                <button
+                  onClick={() => removeAnnouncement(ann.id)}
+                  className="bg-red-900/50 hover:bg-red-600 text-red-200 hover:text-white px-3 py-1.5 rounded-lg border border-red-800 text-sm transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Team & Player Settings */}
       {db.teams.map(team => (
         <div key={team.id} className="bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-700">
           <h2 className="text-3xl font-bold mb-6 text-white flex items-center gap-4">

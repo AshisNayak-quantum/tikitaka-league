@@ -24,26 +24,37 @@ export interface Player {
   redCards: number;
 }
 
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  target: string; // 'all' or teamId
+}
+
 export interface DB {
   teams: Team[];
   players: Player[];
+  announcements: Announcement[];
   admin: {
     password?: string;
   };
 }
 
 export async function getDb(): Promise<DB> {
-  const [teamsSnap, playersSnap, adminSnap] = await Promise.all([
+  const [teamsSnap, playersSnap, announcementsSnap, adminSnap] = await Promise.all([
     db.collection('teams').get(),
     db.collection('players').get(),
+    db.collection('announcements').get(),
     db.collection('config').doc('admin').get(),
   ]);
 
   const teams = teamsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Team));
   const players = playersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Player));
+  const announcements = announcementsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Announcement));
   const admin = adminSnap.exists ? adminSnap.data() as { password: string } : { password: '' };
 
-  return { teams, players, admin };
+  return { teams, players, announcements, admin };
 }
 
 export async function saveDb(data: DB): Promise<void> {
@@ -57,7 +68,6 @@ export async function saveDb(data: DB): Promise<void> {
   }
 
   // Save players
-  // First, delete players not in the new list
   const existingPlayersSnap = await db.collection('players').get();
   const newPlayerIds = new Set(data.players.map(p => p.id));
   existingPlayersSnap.docs.forEach(doc => {
@@ -66,10 +76,24 @@ export async function saveDb(data: DB): Promise<void> {
     }
   });
 
-  // Upsert all players in the new list
   for (const player of data.players) {
     const { id, ...rest } = player;
     const ref = db.collection('players').doc(id);
+    batch.set(ref, rest);
+  }
+
+  // Save announcements
+  const existingAnnouncementsSnap = await db.collection('announcements').get();
+  const newAnnouncementIds = new Set((data.announcements || []).map(a => a.id));
+  existingAnnouncementsSnap.docs.forEach(doc => {
+    if (!newAnnouncementIds.has(doc.id)) {
+      batch.delete(doc.ref);
+    }
+  });
+
+  for (const ann of (data.announcements || [])) {
+    const { id, ...rest } = ann;
+    const ref = db.collection('announcements').doc(id);
     batch.set(ref, rest);
   }
 
