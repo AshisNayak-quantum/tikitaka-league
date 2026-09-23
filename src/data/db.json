@@ -1,0 +1,141 @@
+{
+  "teams": [
+    {
+      "id": "t1",
+      "name": "Apex FC",
+      "budget": 50000000,
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "points": 0,
+      "logo": "/logos/apex.png"
+    },
+    {
+      "id": "t2",
+      "name": "FC Valhalla",
+      "budget": 45000000,
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "points": 0,
+      "logo": "/logos/valhalla.png"
+    },
+    {
+      "id": "t3",
+      "name": "Stormhold United",
+      "budget": 60000000,
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "points": 0,
+      "logo": "/logos/stormhold.png"
+    },
+    {
+      "id": "t4",
+      "name": "Vanguard Athletic",
+      "budget": 55000000,
+      "played": 0,
+      "won": 0,
+      "drawn": 0,
+      "lost": 0,
+      "points": 0,
+      "logo": "/logos/vanguard.png"
+    }
+  ],
+  "players": [
+    {
+      "id": "p1",
+      "teamId": "t1",
+      "name": "Leonel Messy",
+      "position": "Forward",
+      "value": 20000000,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    },
+    {
+      "id": "p2",
+      "teamId": "t1",
+      "name": "Kevin De Brain",
+      "position": "Midfielder",
+      "value": 15000000,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    },
+    {
+      "id": "p3",
+      "teamId": "t2",
+      "name": "Cristiano Rolando",
+      "position": "Forward",
+      "value": 18000000,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    },
+    {
+      "id": "p4",
+      "teamId": "t2",
+      "name": "Virgil Van Dick",
+      "position": "Defender",
+      "value": 12000000,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    },
+    {
+      "id": "p5",
+      "teamId": "t3",
+      "name": "Harry Kane",
+      "position": "Forward",
+      "value": 17000000,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    },
+    {
+      "id": "p6",
+      "teamId": "t3",
+      "name": "Alisson Becker",
+      "position": "Goalkeeper",
+      "value": 10000000,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    },
+    {
+      "id": "p7",
+      "teamId": "t4",
+      "name": "Kylian Mboppe",
+      "position": "Forward",
+      "value": 25000000,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    },
+    {
+      "id": "p8",
+      "teamId": "t4",
+      "name": "N'Golo Kante",
+      "position": "Midfielder",
+      "value": 8000000,
+      "goals": 0,
+      "assists": 0,
+      "yellowCards": 0,
+      "redCards": 0
+    }
+  ],
+  "admin": {
+    "password": "messiisthegoat"
+  }
+}
