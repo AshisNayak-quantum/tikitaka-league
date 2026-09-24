@@ -12,10 +12,16 @@ export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
   const [saving, setSaving] = useState(false);
   const router = useRouter();
 
-  // Announcement form state
+  // Announcement form state (Create)
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newTarget, setNewTarget] = useState('all');
+
+  // Announcement editing state
+  const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editTarget, setEditTarget] = useState('all');
 
   const handleTeamChange = (id: string, field: keyof Team, value: number | string) => {
     setDb(prev => ({
@@ -84,6 +90,40 @@ export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
     setNewTarget('all');
   };
 
+  const startEditAnnouncement = (ann: Announcement) => {
+    setEditingAnnId(ann.id);
+    setEditTitle(ann.title);
+    setEditContent(ann.content);
+    setEditTarget(ann.target);
+  };
+
+  const cancelEditAnnouncement = () => {
+    setEditingAnnId(null);
+    setEditTitle('');
+    setEditContent('');
+    setEditTarget('all');
+  };
+
+  const saveAnnouncementEdit = (id: string) => {
+    if (!editTitle.trim() || !editContent.trim()) return;
+
+    setDb(prev => ({
+      ...prev,
+      announcements: (prev.announcements || []).map(a =>
+        a.id === id
+          ? {
+              ...a,
+              title: editTitle.trim(),
+              content: editContent.trim(),
+              target: editTarget,
+            }
+          : a
+      ),
+    }));
+
+    cancelEditAnnouncement();
+  };
+
   const removeAnnouncement = (id: string) => {
     setDb(prev => ({
       ...prev,
@@ -120,7 +160,7 @@ export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
         <button 
           onClick={saveChanges} 
           disabled={saving}
-          className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-xl shadow-lg transition-colors"
+          className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-xl shadow-lg transition-colors active:scale-95"
         >
           {saving ? 'Saving...' : '💾 Save All Changes'}
         </button>
@@ -187,23 +227,88 @@ export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
         ) : (
           <div className="space-y-4">
             {db.announcements.map(ann => (
-              <div key={ann.id} className="flex justify-between items-start bg-slate-900 p-4 rounded-xl border border-slate-700 gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h4 className="font-bold text-amber-300 text-lg">{ann.title}</h4>
-                    <span className="bg-slate-800 text-amber-400 text-xs px-2 py-0.5 rounded border border-slate-600">
-                      {ann.target === 'all' ? '🌐 Main Page' : `🛡️ ${db.teams.find(t => t.id === ann.target)?.name || ann.target}`}
-                    </span>
-                    <span className="text-xs text-slate-500">{ann.createdAt}</span>
+              <div key={ann.id} className="bg-slate-900 p-5 rounded-xl border border-slate-700">
+                {editingAnnId === ann.id ? (
+                  /* Edit Mode */
+                  <div className="space-y-4">
+                    <h4 className="font-bold text-amber-400 text-sm uppercase">Editing Announcement</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-slate-400 mb-1">Title</label>
+                        <input
+                          type="text"
+                          value={editTitle}
+                          onChange={e => setEditTitle(e.target.value)}
+                          className="w-full bg-slate-800 border border-slate-600 text-white p-2 rounded-lg focus:border-amber-400 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-400 mb-1">Target Location</label>
+                        <select
+                          value={editTarget}
+                          onChange={e => setEditTarget(e.target.value)}
+                          className="w-full bg-slate-800 border border-slate-600 text-white p-2 rounded-lg focus:border-amber-400 focus:outline-none"
+                        >
+                          <option value="all">Main Page (Global Announcement)</option>
+                          {db.teams.map(t => (
+                            <option key={t.id} value={t.id}>{t.name} Team Page</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 mb-1">Content</label>
+                      <textarea
+                        value={editContent}
+                        onChange={e => setEditContent(e.target.value)}
+                        rows={3}
+                        className="w-full bg-slate-800 border border-slate-600 text-white p-2 rounded-lg focus:border-amber-400 focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => saveAnnouncementEdit(ann.id)}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+                      >
+                        ✓ Done Editing
+                      </button>
+                      <button
+                        onClick={cancelEditAnnouncement}
+                        className="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-slate-300 text-sm whitespace-pre-wrap">{ann.content}</p>
-                </div>
-                <button
-                  onClick={() => removeAnnouncement(ann.id)}
-                  className="bg-red-900/50 hover:bg-red-600 text-red-200 hover:text-white px-3 py-1.5 rounded-lg border border-red-800 text-sm transition-colors"
-                >
-                  Delete
-                </button>
+                ) : (
+                  /* Display Mode */
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h4 className="font-bold text-amber-300 text-lg">{ann.title}</h4>
+                        <span className="bg-slate-800 text-amber-400 text-xs px-2 py-0.5 rounded border border-slate-600">
+                          {ann.target === 'all' ? '🌐 Main Page' : `🛡️ ${db.teams.find(t => t.id === ann.target)?.name || ann.target}`}
+                        </span>
+                        <span className="text-xs text-slate-500">{ann.createdAt}</span>
+                      </div>
+                      <p className="text-slate-300 text-sm whitespace-pre-wrap">{ann.content}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startEditAnnouncement(ann)}
+                        className="bg-amber-600/80 hover:bg-amber-500 text-white font-semibold px-3 py-1.5 rounded-lg border border-amber-500/50 text-sm transition-colors"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => removeAnnouncement(ann.id)}
+                        className="bg-red-900/50 hover:bg-red-600 text-red-200 hover:text-white px-3 py-1.5 rounded-lg border border-red-800 text-sm transition-colors"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -220,7 +325,7 @@ export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
           
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8 bg-slate-900 p-6 rounded-xl border border-slate-700">
             <div>
-              <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">Budget ($)</label>
+              <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">Budget (€)</label>
               <input type="number" value={team.budget} onChange={e => handleTeamChange(team.id, 'budget', Number(e.target.value))} className="w-full bg-slate-800 border border-slate-600 text-white p-2 rounded focus:border-amber-400 focus:outline-none" />
             </div>
             <div>
@@ -263,7 +368,7 @@ export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 mb-1">Value ($)</label>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Value (€)</label>
                   <input type="number" value={player.value} onChange={e => handlePlayerChange(player.id, 'value', Number(e.target.value))} className="w-32 bg-slate-800 border border-slate-600 text-white p-2 rounded focus:border-amber-400 focus:outline-none" placeholder="Value" />
                 </div>
                 <div className="w-16">

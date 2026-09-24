@@ -19,7 +19,7 @@ export default async function TeamsPage() {
               </div>
               <div className="flex-1 w-full">
                 <h2 className="text-2xl font-bold text-white mb-2 group-hover:text-amber-400 transition-colors text-center md:text-left">{team.name}</h2>
-                <p className="text-slate-400 mb-4 text-center md:text-left">Budget: <span className="text-green-400">${team.budget.toLocaleString()}</span></p>
+                <p className="text-slate-400 mb-4 text-center md:text-left">Budget: <span className="text-green-400">€{team.budget.toLocaleString()}</span></p>
                 <div className="flex justify-between text-sm text-slate-300 font-semibold bg-slate-900 p-3 rounded-lg">
                   <span>Played: {team.played}</span>
                   <span>Won: <span className="text-green-400">{team.won}</span></span>

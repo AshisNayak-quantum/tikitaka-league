@@ -16,7 +16,7 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
 
   const players = db.players.filter((p) => p.teamId === team.id);
   const teamAnnouncements = (db.announcements || []).filter(
-    (a) => a.target === team.id || a.target === 'all'
+    (a) => a.target === team.id
   );
 
   return (
@@ -34,7 +34,7 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
           </div>
           <div className="text-center md:text-left">
             <h1 className="text-5xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-200">{team.name}</h1>
-            <p className="text-slate-400 text-lg font-semibold">Budget: <span className="text-green-400">${team.budget.toLocaleString()}</span></p>
+            <p className="text-slate-400 text-lg font-semibold">Budget: <span className="text-green-400">€{team.budget.toLocaleString()}</span></p>
           </div>
         </div>
         
@@ -61,7 +61,7 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
       {teamAnnouncements.length > 0 && (
         <div className="mb-10 space-y-4">
           <h2 className="text-2xl font-bold text-amber-400 flex items-center gap-2">
-            📢 Team & League Announcements
+            📢 Team Announcements
           </h2>
           {teamAnnouncements.map((ann) => (
             <div
@@ -71,15 +71,9 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
               <div className="flex justify-between items-center mb-2">
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-xl text-amber-300">{ann.title}</h3>
-                  {ann.target === 'all' ? (
-                    <span className="bg-amber-500/20 text-amber-300 text-xs px-2 py-0.5 rounded font-semibold border border-amber-400/30">
-                      Global
-                    </span>
-                  ) : (
-                    <span className="bg-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded font-semibold border border-slate-600">
-                      Team Notice
-                    </span>
-                  )}
+                  <span className="bg-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded font-semibold border border-slate-600">
+                    Team Notice
+                  </span>
                 </div>
                 <span className="text-xs text-slate-400">{ann.createdAt}</span>
               </div>
@@ -119,7 +113,7 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
               </div>
 
               <span className="mt-auto font-bold text-green-400 bg-slate-900 p-2 text-center rounded-lg">
-                Value: ${player.value.toLocaleString()}
+                Value: €{player.value.toLocaleString()}
               </span>
             </div>
           ))}
