@@ -323,7 +323,11 @@ export default function AdminDashboardClient({ initialDb }: { initialDb: DB }) {
             {team.name} Settings
           </h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8 bg-slate-900 p-6 rounded-xl border border-slate-700">
+          <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-8 bg-slate-900 p-6 rounded-xl border border-slate-700">
+            <div className="col-span-2 md:col-span-2">
+              <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">Club Name</label>
+              <input type="text" value={team.name} onChange={e => handleTeamChange(team.id, 'name', e.target.value)} className="w-full bg-slate-800 border border-slate-600 text-amber-400 font-bold p-2 rounded focus:border-amber-400 focus:outline-none" />
+            </div>
             <div>
               <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">Budget (€)</label>
               <input type="number" value={team.budget} onChange={e => handleTeamChange(team.id, 'budget', Number(e.target.value))} className="w-full bg-slate-800 border border-slate-600 text-white p-2 rounded focus:border-amber-400 focus:outline-none" />
